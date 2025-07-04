@@ -248,8 +248,14 @@ const App = () => {
                   type="time"
                   value={formData.start_time}
                   onChange={(e) => setFormData({...formData, start_time: e.target.value})}
+                  min="07:00"
+                  max="22:00"
+                  step="1800"
                   required
                 />
+                <small style={{color: '#666', fontSize: '0.8rem'}}>
+                  利用可能時間: 7:00-22:00 (30分刻み)
+                </small>
               </div>
 
               <div className="form-group">
@@ -258,8 +264,14 @@ const App = () => {
                   type="time"
                   value={formData.end_time}
                   onChange={(e) => setFormData({...formData, end_time: e.target.value})}
+                  min="07:00"
+                  max="22:00"
+                  step="1800"
                   required
                 />
+                <small style={{color: '#666', fontSize: '0.8rem'}}>
+                  利用可能時間: 7:00-22:00 (30分刻み)
+                </small>
               </div>
 
               <div className="form-buttons">
