@@ -227,33 +227,45 @@ async def update_reservation(reservation_id: str, update_data: ReservationUpdate
 @api_router.delete("/reservations/{reservation_id}")
 async def delete_reservation(reservation_id: str):
     """Delete a reservation"""
-    logger.info(f"削除リクエスト受信: reservation_id={reservation_id}")
+    logger.info(f"=== 削除リクエスト受信 ===")
+    logger.info(f"reservation_id: {reservation_id}")
+    logger.info(f"リクエストタイプ: DELETE")
     
     try:
         # 削除前に予約が存在するか確認
         existing = await db.reservations.find_one({"id": reservation_id})
+        logger.info(f"既存予約検索結果: {existing}")
+        
         if not existing:
             logger.warning(f"削除対象の予約が見つかりません: id={reservation_id}")
             raise HTTPException(status_code=404, detail="予約が見つかりません")
         
-        logger.info(f"削除対象予約: {existing}")
+        logger.info(f"削除対象予約詳細: {existing}")
         
         # 予約を削除
         result = await db.reservations.delete_one({"id": reservation_id})
-        logger.info(f"削除結果: deleted_count={result.deleted_count}")
+        logger.info(f"削除実行結果: deleted_count={result.deleted_count}")
         
         if result.deleted_count == 0:
-            logger.error(f"削除に失敗しました: id={reservation_id}")
-            raise HTTPException(status_code=404, detail="予約が見つかりません")
+            logger.error(f"削除操作に失敗しました: id={reservation_id}")
+            raise HTTPException(status_code=500, detail="削除操作に失敗しました")
         
-        logger.info(f"予約削除成功: id={reservation_id}")
-        return {"message": "予約が削除されました", "deleted_id": reservation_id}
+        logger.info(f"=== 予約削除成功 ===")
+        logger.info(f"削除済みID: {reservation_id}")
+        
+        return {
+            "message": "予約が削除されました", 
+            "deleted_id": reservation_id,
+            "success": True
+        }
     
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"削除処理中にエラー発生: {str(e)}")
-        raise HTTPException(status_code=500, detail="削除処理中にエラーが発生しました")
+        logger.error(f"=== 削除処理中にエラー発生 ===")
+        logger.error(f"エラー内容: {str(e)}")
+        logger.error(f"エラータイプ: {type(e)}")
+        raise HTTPException(status_code=500, detail=f"削除処理中にエラーが発生しました: {str(e)}")
 
 @api_router.get("/benches")
 async def get_benches():
