@@ -245,10 +245,22 @@ const App = () => {
           </button>
         </div>
 
-        {/* Error Message */}
+        {/* Error Message with Retry Option */}
         {error && (
-          <div className="error-message">
-            {error}
+          <div className="error-container">
+            <div className="error-message">
+              ⚠️ {error}
+            </div>
+            <button 
+              onClick={() => {
+                setError('');
+                loadReservations(0, 3);
+              }}
+              className="retry-button"
+              disabled={loading}
+            >
+              {loading ? '再試行中...' : '🔄 再試行'}
+            </button>
           </div>
         )}
 
