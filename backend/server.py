@@ -133,6 +133,14 @@ async def create_reservation(reservation_data: ReservationCreate):
     if start_dt >= end_dt:
         raise HTTPException(status_code=400, detail="終了時刻は開始時刻より後である必要があります")
     
+    # Validate time range (7:00-22:00)
+    if start_dt.hour < 7 or start_dt.hour >= 22 or end_dt.hour < 7 or end_dt.hour > 22:
+        raise HTTPException(status_code=400, detail="予約可能時間は7:00-22:00です")
+    
+    # Validate 30-minute increments
+    if start_dt.minute not in [0, 30] or end_dt.minute not in [0, 30]:
+        raise HTTPException(status_code=400, detail="時刻は30分刻みで入力してください (例: 07:00, 07:30, 08:00)")
+    
     # Check for double booking
     if await check_double_booking(reservation_data.bench_id, reservation_data.start_time, reservation_data.end_time):
         raise HTTPException(status_code=409, detail="この時間帯は既に予約されています")
