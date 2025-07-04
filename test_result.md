@@ -238,6 +238,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "Delete functionality tested and working correctly. Delete buttons are visible on reservation bars, clicking a delete button shows a confirmation dialog with the correct Japanese message 'この予約を削除してもよろしいですか？', accepting the confirmation successfully deletes the reservation, and the UI updates automatically to reflect the deletion."
+      - working: true
+        agent: "testing"
+        comment: "Tested the new delete functionality in the edit form. The delete button ('予約削除') is correctly located inside the edit form. When clicking on a reservation bar, the edit form opens with the reservation data populated. Clicking the delete button shows a confirmation dialog with the expected message. After accepting the confirmation, the reservation is successfully deleted, the form closes automatically, and the timetable updates to reflect the deletion."
 
 metadata:
   created_by: "main_agent"
