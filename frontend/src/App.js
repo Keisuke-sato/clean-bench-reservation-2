@@ -130,16 +130,6 @@ const App = () => {
     setSelectedDate(newDate.toISOString().split('T')[0]);
   };
 
-  // Format time for display
-  const formatTime = (timeString) => {
-    const date = new Date(timeString);
-    return date.toLocaleTimeString('ja-JP', { 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      hour12: false 
-    });
-  };
-
   // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -151,21 +141,52 @@ const App = () => {
     });
   };
 
-  // Group reservations by bench
-  const groupedReservations = reservations.reduce((acc, reservation) => {
-    if (!acc[reservation.bench_id]) {
-      acc[reservation.bench_id] = [];
+  // Generate time slots for timetable (every 15 minutes for performance)
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        slots.push(timeString);
+      }
     }
-    acc[reservation.bench_id].push(reservation);
-    return acc;
-  }, {});
+    return slots;
+  };
+
+  // Calculate reservation bar properties
+  const calculateBarProperties = (reservation) => {
+    const startDate = new Date(reservation.start_time);
+    const endDate = new Date(reservation.end_time);
+    
+    const startMinutes = startDate.getHours() * 60 + startDate.getMinutes();
+    const endMinutes = endDate.getHours() * 60 + endDate.getMinutes();
+    const durationMinutes = endMinutes - startMinutes;
+    
+    // Each 15-minute slot is 40px high
+    const pixelsPerMinute = 40 / 15;
+    const top = startMinutes * pixelsPerMinute;
+    const height = durationMinutes * pixelsPerMinute;
+    
+    return { top, height };
+  };
+
+  // Get reservation color
+  const getReservationColor = (index) => {
+    const colors = [
+      '#667eea', '#764ba2', '#f093fb', '#f5576c',
+      '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+      '#ffecd2', '#fcb69f', '#a8edea', '#fed6e3'
+    ];
+    return colors[index % colors.length];
+  };
+
+  const timeSlots = generateTimeSlots();
 
   return (
     <div className="app">
       <div className="container">
         <header className="header">
           <h1>クリーンベンチ予約システム</h1>
-          <p>実験室のクリーンベンチをオンラインで予約できます</p>
         </header>
 
         {/* Date Navigation */}
@@ -269,65 +290,134 @@ const App = () => {
           </div>
         )}
 
-        {/* Reservations Timeline */}
-        <div className="reservations-container">
+        {/* Timetable View */}
+        <div className="timetable-container">
           {loading && <div className="loading">読み込み中...</div>}
           
-          {/* Front Bench */}
-          <div className="bench-section">
-            <h3>手前のベンチ</h3>
-            <div className="reservations-list">
-              {groupedReservations.front?.length > 0 ? (
-                groupedReservations.front.map(reservation => (
-                  <div key={reservation.id} className="reservation-item">
-                    <div className="reservation-time">
-                      {formatTime(reservation.start_time)} - {formatTime(reservation.end_time)}
-                    </div>
-                    <div className="reservation-user">
-                      {reservation.user_name}
-                    </div>
-                    <div className="reservation-actions">
-                      <button onClick={() => startEdit(reservation)} className="edit-button">
-                        編集
-                      </button>
-                      <button onClick={() => deleteReservation(reservation.id)} className="delete-button">
-                        削除
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="no-reservations">予約がありません</div>
-              )}
+          <div className="timetable">
+            {/* Header */}
+            <div className="timetable-header">
+              <div className="time-column-header">時刻</div>
+              <div className="bench-column-header">手前</div>
+              <div className="bench-column-header">奥</div>
             </div>
-          </div>
 
-          {/* Back Bench */}
-          <div className="bench-section">
-            <h3>奥のベンチ</h3>
-            <div className="reservations-list">
-              {groupedReservations.back?.length > 0 ? (
-                groupedReservations.back.map(reservation => (
-                  <div key={reservation.id} className="reservation-item">
-                    <div className="reservation-time">
-                      {formatTime(reservation.start_time)} - {formatTime(reservation.end_time)}
-                    </div>
-                    <div className="reservation-user">
-                      {reservation.user_name}
-                    </div>
-                    <div className="reservation-actions">
-                      <button onClick={() => startEdit(reservation)} className="edit-button">
-                        編集
-                      </button>
-                      <button onClick={() => deleteReservation(reservation.id)} className="delete-button">
-                        削除
-                      </button>
-                    </div>
+            {/* Time grid */}
+            <div className="timetable-grid">
+              {/* Time column */}
+              <div className="time-column">
+                {timeSlots.map((time, index) => (
+                  <div key={time} className="time-slot">
+                    {time}
                   </div>
-                ))
-              ) : (
-                <div className="no-reservations">予約がありません</div>
-              )}
+                ))}
+              </div>
+
+              {/* Front bench column */}
+              <div className="bench-column" data-bench="front">
+                <div className="bench-timeline">
+                  {reservations
+                    .filter(r => r.bench_id === 'front')
+                    .map((reservation, index) => {
+                      const { top, height } = calculateBarProperties(reservation);
+                      return (
+                        <div
+                          key={reservation.id}
+                          className="reservation-bar"
+                          style={{
+                            top: `${top}px`,
+                            height: `${height}px`,
+                            backgroundColor: getReservationColor(index),
+                            left: '2px',
+                            right: '2px'
+                          }}
+                          onClick={() => startEdit(reservation)}
+                          title={`${reservation.user_name} (${new Date(reservation.start_time).toTimeString().substring(0,5)} - ${new Date(reservation.end_time).toTimeString().substring(0,5)})`}
+                        >
+                          <div className="reservation-content">
+                            <div className="reservation-user">{reservation.user_name}</div>
+                            <div className="reservation-time">
+                              {new Date(reservation.start_time).toTimeString().substring(0,5)} - {new Date(reservation.end_time).toTimeString().substring(0,5)}
+                            </div>
+                          </div>
+                          <div className="reservation-actions">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startEdit(reservation);
+                              }}
+                              className="edit-button"
+                            >
+                              編集
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteReservation(reservation.id);
+                              }}
+                              className="delete-button"
+                            >
+                              削除
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
+              {/* Back bench column */}
+              <div className="bench-column" data-bench="back">
+                <div className="bench-timeline">
+                  {reservations
+                    .filter(r => r.bench_id === 'back')
+                    .map((reservation, index) => {
+                      const { top, height } = calculateBarProperties(reservation);
+                      return (
+                        <div
+                          key={reservation.id}
+                          className="reservation-bar"
+                          style={{
+                            top: `${top}px`,
+                            height: `${height}px`,
+                            backgroundColor: getReservationColor(index + 6),
+                            left: '2px',
+                            right: '2px'
+                          }}
+                          onClick={() => startEdit(reservation)}
+                          title={`${reservation.user_name} (${new Date(reservation.start_time).toTimeString().substring(0,5)} - ${new Date(reservation.end_time).toTimeString().substring(0,5)})`}
+                        >
+                          <div className="reservation-content">
+                            <div className="reservation-user">{reservation.user_name}</div>
+                            <div className="reservation-time">
+                              {new Date(reservation.start_time).toTimeString().substring(0,5)} - {new Date(reservation.end_time).toTimeString().substring(0,5)}
+                            </div>
+                          </div>
+                          <div className="reservation-actions">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startEdit(reservation);
+                              }}
+                              className="edit-button"
+                            >
+                              編集
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteReservation(reservation.id);
+                              }}
+                              className="delete-button"
+                            >
+                              削除
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
             </div>
           </div>
         </div>
