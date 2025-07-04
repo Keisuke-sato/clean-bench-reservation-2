@@ -274,16 +274,30 @@ const App = () => {
                       
                       const handleDelete = async () => {
                         try {
+                          // 詳細な確認ダイアログ
+                          const userConfirmed = window.confirm(
+                            `⚠️ 予約を削除してもよろしいですか？\n\n` +
+                            `📝 利用者: ${editingReservation.user_name}\n` +
+                            `⏰ 時間: ${new Date(editingReservation.start_time).toTimeString().substring(0,5)} - ${new Date(editingReservation.end_time).toTimeString().substring(0,5)}\n` +
+                            `🏢 ベンチ: ${editingReservation.bench_id === 'front' ? '手前' : '奥'}\n\n` +
+                            `❌ この操作は取り消せません。\n\n` +
+                            `削除する場合は「OK」を押してください。`
+                          );
+                          
+                          if (!userConfirmed) {
+                            console.log('ユーザーが削除をキャンセルしました');
+                            return;
+                          }
+                          
                           console.log('削除処理を開始します...');
                           console.log('削除対象ID:', editingReservation.id);
-                          console.log('API URL:', `${API}/reservations/${editingReservation.id}`);
                           
                           setLoading(true);
                           setError('');
                           
-                          // DELETE リクエスト送信（確認ダイアログなしでテスト）
+                          // DELETE リクエスト送信
                           const response = await axios.delete(`${API}/reservations/${editingReservation.id}`);
-                          console.log('削除成功:', response.data);
+                          console.log('✅ 削除成功:', response.data);
                           
                           // 状態をリセット
                           setEditingReservation(null);
@@ -291,25 +305,24 @@ const App = () => {
                           
                           // 予約リストを再読み込み
                           await loadReservations();
-                          console.log('削除処理が完了しました');
+                          console.log('✅ 削除処理が完了しました');
                           
                         } catch (error) {
-                          console.error('削除エラー:', error);
+                          console.error('❌ 削除エラー:', error);
                           if (error.response) {
                             console.error('レスポンスエラー:', error.response.data);
                             console.error('ステータスコード:', error.response.status);
                           }
-                          setError(`削除に失敗しました: ${error.message}`);
+                          setError(`削除に失敗しました: ${error.response?.data?.detail || error.message}`);
                         } finally {
                           setLoading(false);
                         }
                       };
                       
-                      // 一時的に確認ダイアログなしで実行（デバッグ用）
                       handleDelete();
                     }}
                   >
-                    {loading ? '削除中...' : '予約削除（テスト）'}
+                    {loading ? '削除中...' : '🗑️ 予約削除'}
                   </button>
                 )}
                 
