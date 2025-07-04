@@ -57,7 +57,9 @@ def get_current_jst_date():
 def generate_test_reservation(bench_id="front", minutes_from_now=30, duration_minutes=60):
     """Generate test reservation data with times relative to now"""
     now = datetime.datetime.now(JST)
-    start_time = now + datetime.timedelta(minutes=minutes_from_now)
+    # Add a random offset to avoid conflicts with existing reservations
+    random_offset = uuid.uuid4().int % 60  # Random minutes between 0-59
+    start_time = now + datetime.timedelta(minutes=minutes_from_now + random_offset)
     end_time = start_time + datetime.timedelta(minutes=duration_minutes)
     
     return {
