@@ -163,15 +163,18 @@ backend:
         comment: "All CRUD API endpoints are working correctly. POST creates new reservations, GET retrieves reservations with proper filtering, PUT updates reservations, and DELETE removes reservations. All endpoints handle validation and return appropriate error messages in Japanese."
   - task: "Bench information endpoints"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented /benches endpoint returning front/back bench info"
+      - working: true
+        agent: "testing"
+        comment: "Bench information endpoint is working correctly. It returns the expected front ('手前') and back ('奥') bench information with proper IDs."
 
 frontend:
   - task: "Japanese language interface"
