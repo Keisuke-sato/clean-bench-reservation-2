@@ -274,14 +274,6 @@ const App = () => {
                       
                       const handleDelete = async () => {
                         try {
-                          // 確認ダイアログ
-                          const confirmMessage = `この予約を削除してもよろしいですか？\n\n利用者: ${editingReservation.user_name}\n時間: ${new Date(editingReservation.start_time).toTimeString().substring(0,5)} - ${new Date(editingReservation.end_time).toTimeString().substring(0,5)}\n\nこの操作は取り消せません。`;
-                          
-                          if (!window.confirm(confirmMessage)) {
-                            console.log('削除がキャンセルされました');
-                            return;
-                          }
-                          
                           console.log('削除処理を開始します...');
                           console.log('削除対象ID:', editingReservation.id);
                           console.log('API URL:', `${API}/reservations/${editingReservation.id}`);
@@ -289,7 +281,7 @@ const App = () => {
                           setLoading(true);
                           setError('');
                           
-                          // DELETE リクエスト送信
+                          // DELETE リクエスト送信（確認ダイアログなしでテスト）
                           const response = await axios.delete(`${API}/reservations/${editingReservation.id}`);
                           console.log('削除成功:', response.data);
                           
@@ -313,10 +305,11 @@ const App = () => {
                         }
                       };
                       
+                      // 一時的に確認ダイアログなしで実行（デバッグ用）
                       handleDelete();
                     }}
                   >
-                    {loading ? '削除中...' : '予約削除'}
+                    {loading ? '削除中...' : '予約削除（テスト）'}
                   </button>
                 )}
                 
