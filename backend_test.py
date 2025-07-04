@@ -42,7 +42,12 @@ def print_test_result(test_name, passed, message=""):
 def is_jst_timezone(time_str):
     """Check if a time string has JST timezone"""
     dt = parser.parse(time_str)
-    return dt.tzinfo is not None and dt.tzinfo.tzname(dt) in ["JST", "+09:00"]
+    # Check for JST timezone - could be represented as JST, +09:00, or Asia/Tokyo
+    return dt.tzinfo is not None and (
+        dt.tzinfo.tzname(dt) in ["JST", "+09:00"] or 
+        "+09:00" in time_str or
+        dt.utcoffset().total_seconds() == 9 * 3600  # 9 hours offset
+    )
 
 def get_current_jst_date():
     """Get current date in JST timezone in ISO format"""
