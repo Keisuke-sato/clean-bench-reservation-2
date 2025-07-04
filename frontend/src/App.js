@@ -385,7 +385,6 @@ const App = () => {
                             left: '2px',
                             right: '2px'
                           }}
-                          onClick={() => startEdit(reservation)}
                           title={`${reservation.user_name} (${new Date(reservation.start_time).toTimeString().substring(0,5)} - ${new Date(reservation.end_time).toTimeString().substring(0,5)})`}
                         >
                           <div className="reservation-content">
@@ -401,6 +400,7 @@ const App = () => {
                                 startEdit(reservation);
                               }}
                               className="edit-button"
+                              title="この予約を編集"
                             >
                               編集
                             </button>
@@ -410,6 +410,7 @@ const App = () => {
                                 deleteReservation(reservation.id);
                               }}
                               className="delete-button"
+                              title="この予約を削除"
                             >
                               削除
                             </button>
