@@ -121,15 +121,18 @@ backend:
         comment: "Reservation model is working correctly. UUID generation, field validation, and JST timezone handling all function as expected."
   - task: "JST timezone handling and datetime utilities"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented pytz for JST, parse_jst_time function, proper timezone conversion"
+      - working: true
+        agent: "testing"
+        comment: "JST timezone handling is working correctly. All API responses include proper JST timezone (+09:00). The parse_jst_time function correctly converts times to JST."
   - task: "Double-booking prevention algorithm"
     implemented: true
     working: "NA"
