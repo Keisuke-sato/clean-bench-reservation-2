@@ -227,11 +227,33 @@ async def update_reservation(reservation_id: str, update_data: ReservationUpdate
 @api_router.delete("/reservations/{reservation_id}")
 async def delete_reservation(reservation_id: str):
     """Delete a reservation"""
-    result = await db.reservations.delete_one({"id": reservation_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="予約が見つかりません")
+    logger.info(f"削除リクエスト受信: reservation_id={reservation_id}")
     
-    return {"message": "予約が削除されました"}
+    try:
+        # 削除前に予約が存在するか確認
+        existing = await db.reservations.find_one({"id": reservation_id})
+        if not existing:
+            logger.warning(f"削除対象の予約が見つかりません: id={reservation_id}")
+            raise HTTPException(status_code=404, detail="予約が見つかりません")
+        
+        logger.info(f"削除対象予約: {existing}")
+        
+        # 予約を削除
+        result = await db.reservations.delete_one({"id": reservation_id})
+        logger.info(f"削除結果: deleted_count={result.deleted_count}")
+        
+        if result.deleted_count == 0:
+            logger.error(f"削除に失敗しました: id={reservation_id}")
+            raise HTTPException(status_code=404, detail="予約が見つかりません")
+        
+        logger.info(f"予約削除成功: id={reservation_id}")
+        return {"message": "予約が削除されました", "deleted_id": reservation_id}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"削除処理中にエラー発生: {str(e)}")
+        raise HTTPException(status_code=500, detail="削除処理中にエラーが発生しました")
 
 @api_router.get("/benches")
 async def get_benches():
