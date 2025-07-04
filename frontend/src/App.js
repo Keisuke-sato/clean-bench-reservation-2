@@ -24,14 +24,16 @@ const App = () => {
   // Load reservations for selected date
   const loadReservations = async () => {
     try {
+      console.log('予約読み込み開始:', selectedDate);
       setLoading(true);
       const response = await axios.get(`${API}/reservations`, {
         params: { date: selectedDate }
       });
+      console.log('予約データ取得:', response.data);
       setReservations(response.data);
     } catch (err) {
+      console.error('予約読み込みエラー:', err);
       setError('予約の読み込みに失敗しました');
-      console.error('Error loading reservations:', err);
     } finally {
       setLoading(false);
     }
