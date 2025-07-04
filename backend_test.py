@@ -400,34 +400,46 @@ def test_edge_cases():
         malformed_time_success = False
     
     # Test minute-level precision
-    minute_precision = generate_test_reservation()
-    start = parser.parse(minute_precision["start_time"])
-    # Set specific minutes
-    start = start.replace(minute=37, second=0, microsecond=0)
-    end = start + datetime.timedelta(minutes=42)  # 42 minutes duration
-    minute_precision["start_time"] = start.isoformat()
-    minute_precision["end_time"] = end.isoformat()
-    
     try:
+        # Generate a reservation with specific minute values
+        now = datetime.datetime.now(JST)
+        # Use a time far in the future to avoid conflicts
+        start = now + datetime.timedelta(hours=8)
+        # Set specific minutes
+        start = start.replace(minute=37, second=0, microsecond=0)
+        end = start + datetime.timedelta(minutes=42)  # 42 minutes duration
+        
+        minute_precision = {
+            "bench_id": "front",
+            "user_name": f"分単位テスト {uuid.uuid4().hex[:8]}",
+            "start_time": start.isoformat(),
+            "end_time": end.isoformat()
+        }
+        
         response = requests.post(f"{BASE_URL}/reservations", json=minute_precision)
-        data = response.json()
         
-        # Check if the returned times have the same minute values
-        returned_start = parser.parse(data["start_time"])
-        returned_end = parser.parse(data["end_time"])
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Check if the returned times have the same minute values
+            returned_start = parser.parse(data["start_time"])
+            returned_end = parser.parse(data["end_time"])
+            
+            minute_precision_success = (
+                returned_start.minute == start.minute and
+                returned_end.minute == end.minute
+            )
+            
+            minute_precision_message = f"Minute precision - Status: {response.status_code}, Start minute: {returned_start.minute}, End minute: {returned_end.minute}"
+            
+            # Clean up this test reservation
+            if "id" in data:
+                requests.delete(f"{BASE_URL}/reservations/{data['id']}")
+        else:
+            minute_precision_success = False
+            minute_precision_message = f"Failed to create test reservation - Status: {response.status_code}, Response: {response.text}"
         
-        minute_precision_success = (
-            response.status_code == 200 and
-            returned_start.minute == start.minute and
-            returned_end.minute == end.minute
-        )
-        
-        minute_precision_message = f"Minute precision - Status: {response.status_code}, Start minute: {returned_start.minute}, End minute: {returned_end.minute}"
         print_test_result("Minute-level Precision", minute_precision_success, minute_precision_message)
-        
-        # Clean up this test reservation
-        if response.status_code == 200 and "id" in data:
-            requests.delete(f"{BASE_URL}/reservations/{data['id']}")
     except Exception as e:
         print_test_result("Minute-level Precision", False, f"Exception: {str(e)}")
         minute_precision_success = False
