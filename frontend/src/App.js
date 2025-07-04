@@ -373,7 +373,8 @@ const App = () => {
                             left: '2px',
                             right: '2px'
                           }}
-                          title={`${reservation.user_name} (${new Date(reservation.start_time).toTimeString().substring(0,5)} - ${new Date(reservation.end_time).toTimeString().substring(0,5)})`}
+                          onClick={() => startEdit(reservation)}
+                          title={`クリックして編集: ${reservation.user_name} (${new Date(reservation.start_time).toTimeString().substring(0,5)} - ${new Date(reservation.end_time).toTimeString().substring(0,5)})`}
                         >
                           <div className="reservation-content">
                             <div className="reservation-user">{reservation.user_name}</div>
@@ -381,27 +382,8 @@ const App = () => {
                               {new Date(reservation.start_time).toTimeString().substring(0,5)} - {new Date(reservation.end_time).toTimeString().substring(0,5)}
                             </div>
                           </div>
-                          <div className="reservation-actions">
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                startEdit(reservation);
-                              }}
-                              className="edit-button"
-                              title="この予約を編集"
-                            >
-                              編集
-                            </button>
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteReservation(reservation.id);
-                              }}
-                              className="delete-button"
-                              title="この予約を削除"
-                            >
-                              削除
-                            </button>
+                          <div className="edit-indicator">
+                            編集
                           </div>
                         </div>
                       );
