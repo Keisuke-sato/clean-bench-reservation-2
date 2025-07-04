@@ -320,45 +320,34 @@ body {
   text-overflow: ellipsis;
 }
 
-.reservation-actions {
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
-  opacity: 0.8;
+.edit-indicator {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
-.reservation-bar:hover .reservation-actions {
+.reservation-bar:hover .edit-indicator {
   opacity: 1;
 }
 
-.reservation-actions button {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #333;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.7rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  min-width: 40px;
+/* Form delete button styles */
+.delete-form-button {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
 }
 
-.reservation-actions button:hover {
-  background: rgba(255, 255, 255, 1);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.edit-button:hover {
-  background: #ffc107 !important;
-  color: #212529 !important;
-}
-
-.delete-button:hover {
-  background: #dc3545 !important;
-  color: white !important;
+.delete-form-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
 }
 
 /* Responsive Design */
