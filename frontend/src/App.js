@@ -219,7 +219,7 @@ const App = () => {
           </button>
         </div>
 
-        {/* Create Reservation Button */}
+        {/* Create Reservation Button & Manual Refresh */}
         <div className="action-buttons">
           <button 
             onClick={() => {
@@ -230,6 +230,18 @@ const App = () => {
             className="create-button"
           >
             新規予約
+          </button>
+          
+          <button 
+            onClick={() => {
+              console.log('手動更新ボタンがクリックされました');
+              loadReservations(0, 3); // 手動更新時も自動リトライ機能を使用
+            }}
+            className="refresh-button"
+            disabled={loading}
+            title="予約一覧を手動で更新"
+          >
+            {loading ? '🔄 更新中...' : '🔄 更新'}
           </button>
         </div>
 
