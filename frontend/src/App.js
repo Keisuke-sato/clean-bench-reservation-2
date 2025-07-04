@@ -266,49 +266,55 @@ const App = () => {
                 {editingReservation && (
                   <button 
                     type="button" 
-                    onClick={async () => {
-                      try {
-                        // 詳細な確認ダイアログ
-                        const userConfirmed = window.confirm(
-                          `予約を削除してもよろしいですか？\n\n` +
-                          `利用者: ${editingReservation.user_name}\n` +
-                          `時間: ${new Date(editingReservation.start_time).toTimeString().substring(0,5)} - ${new Date(editingReservation.end_time).toTimeString().substring(0,5)}\n\n` +
-                          `この操作は取り消せません。`
-                        );
-                        
-                        if (!userConfirmed) {
-                          console.log('削除がキャンセルされました');
-                          return;
-                        }
-                        
-                        console.log('削除処理開始:', editingReservation.id);
-                        setLoading(true);
-                        setError('');
-                        
-                        // DELETE APIコール
-                        const deleteResponse = await axios.delete(`${API}/reservations/${editingReservation.id}`);
-                        console.log('削除API応答:', deleteResponse.data);
-                        
-                        // フォームを閉じて予約リストを更新
-                        setEditingReservation(null);
-                        setFormData({ bench_id: 'front', user_name: '', start_time: '', end_time: '' });
-                        
-                        // 予約リストを再読み込み
-                        console.log('予約リスト再読み込み開始');
-                        await loadReservations();
-                        console.log('削除処理完了');
-                        
-                      } catch (err) {
-                        console.error('削除エラー:', err);
-                        console.error('エラー詳細:', err.response);
-                        const errorMessage = err.response?.data?.detail || '予約の削除に失敗しました';
-                        setError(`削除エラー: ${errorMessage}`);
-                      } finally {
-                        setLoading(false);
-                      }
-                    }}
                     className="delete-form-button"
                     disabled={loading}
+                    onClick={() => {
+                      console.log('削除ボタンがクリックされました');
+                      console.log('編集中の予約:', editingReservation);
+                      
+                      const handleDelete = async () => {
+                        try {
+                          // 確認ダイアログ
+                          const confirmMessage = `この予約を削除してもよろしいですか？\n\n利用者: ${editingReservation.user_name}\n時間: ${new Date(editingReservation.start_time).toTimeString().substring(0,5)} - ${new Date(editingReservation.end_time).toTimeString().substring(0,5)}\n\nこの操作は取り消せません。`;
+                          
+                          if (!window.confirm(confirmMessage)) {
+                            console.log('削除がキャンセルされました');
+                            return;
+                          }
+                          
+                          console.log('削除処理を開始します...');
+                          console.log('削除対象ID:', editingReservation.id);
+                          console.log('API URL:', `${API}/reservations/${editingReservation.id}`);
+                          
+                          setLoading(true);
+                          setError('');
+                          
+                          // DELETE リクエスト送信
+                          const response = await axios.delete(`${API}/reservations/${editingReservation.id}`);
+                          console.log('削除成功:', response.data);
+                          
+                          // 状態をリセット
+                          setEditingReservation(null);
+                          setFormData({ bench_id: 'front', user_name: '', start_time: '', end_time: '' });
+                          
+                          // 予約リストを再読み込み
+                          await loadReservations();
+                          console.log('削除処理が完了しました');
+                          
+                        } catch (error) {
+                          console.error('削除エラー:', error);
+                          if (error.response) {
+                            console.error('レスポンスエラー:', error.response.data);
+                            console.error('ステータスコード:', error.response.status);
+                          }
+                          setError(`削除に失敗しました: ${error.message}`);
+                        } finally {
+                          setLoading(false);
+                        }
+                      };
+                      
+                      handleDelete();
+                    }}
                   >
                     {loading ? '削除中...' : '予約削除'}
                   </button>
