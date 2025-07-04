@@ -21,19 +21,45 @@ const App = () => {
     end_time: ''
   });
 
-  // Load reservations for selected date
-  const loadReservations = async () => {
+  // Load reservations for selected date with retry functionality
+  const loadReservations = async (retryCount = 0, maxRetries = 3) => {
     try {
-      console.log('予約読み込み開始:', selectedDate);
+      console.log(`予約読み込み開始 (試行 ${retryCount + 1}/${maxRetries + 1}):`, selectedDate);
       setLoading(true);
+      setError(''); // エラーをクリア
+      
       const response = await axios.get(`${API}/reservations`, {
-        params: { date: selectedDate }
+        params: { date: selectedDate },
+        timeout: 10000 // 10秒タイムアウト
       });
-      console.log('予約データ取得:', response.data);
+      
+      console.log('予約データ取得成功:', response.data);
       setReservations(response.data);
+      
     } catch (err) {
-      console.error('予約読み込みエラー:', err);
-      setError('予約の読み込みに失敗しました');
+      console.error(`予約読み込みエラー (試行 ${retryCount + 1}):`, err);
+      
+      // 自動リトライ判定
+      const shouldRetry = retryCount < maxRetries && (
+        err.code === 'ECONNABORTED' || // タイムアウト
+        err.code === 'NETWORK_ERROR' || // ネットワークエラー
+        (err.response && err.response.status >= 500) // サーバーエラー
+      );
+      
+      if (shouldRetry) {
+        console.log(`${2 ** retryCount}秒後に自動リトライします...`);
+        setError(`読み込み中です... (${retryCount + 1}回目再試行)`);
+        
+        setTimeout(() => {
+          loadReservations(retryCount + 1, maxRetries);
+        }, 1000 * (2 ** retryCount)); // 指数バックオフ (1秒, 2秒, 4秒)
+        
+      } else {
+        // 最大リトライ回数に達した場合
+        const errorMessage = err.response?.data?.detail || err.message || '予約の読み込みに失敗しました';
+        setError(`読み込みエラー: ${errorMessage}`);
+        console.error('最大リトライ回数に達しました:', err);
+      }
     } finally {
       setLoading(false);
     }
