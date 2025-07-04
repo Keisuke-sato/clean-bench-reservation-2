@@ -424,7 +424,7 @@ def test_edge_cases():
         print_test_result("Minute-level Precision", minute_precision_success, minute_precision_message)
         
         # Clean up this test reservation
-        if "id" in data:
+        if response.status_code == 200 and "id" in data:
             requests.delete(f"{BASE_URL}/reservations/{data['id']}")
     except Exception as e:
         print_test_result("Minute-level Precision", False, f"Exception: {str(e)}")
