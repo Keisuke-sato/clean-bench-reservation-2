@@ -235,7 +235,7 @@ const App = () => {
         )}
 
         {/* Create/Edit Form */}
-        {(showCreateForm || editingReservation) && (
+          {(showCreateForm || editingReservation) && (
           <div className="form-container">
             <h3>{editingReservation ? '予約編集' : '新規予約'}</h3>
             <form onSubmit={editingReservation ? updateReservation : createReservation}>
@@ -286,6 +286,37 @@ const App = () => {
                 <button type="submit" disabled={loading}>
                   {editingReservation ? '更新' : '予約作成'}
                 </button>
+                
+                {editingReservation && (
+                  <button 
+                    type="button" 
+                    onClick={async () => {
+                      if (window.confirm('この予約を削除してもよろしいですか？\nこの操作は取り消せません。')) {
+                        try {
+                          setLoading(true);
+                          setError('');
+                          await axios.delete(`${API}/reservations/${editingReservation.id}`);
+                          
+                          // フォームを閉じて予約リストを更新
+                          setEditingReservation(null);
+                          setFormData({ bench_id: 'front', user_name: '', start_time: '', end_time: '' });
+                          await loadReservations();
+                          
+                        } catch (err) {
+                          console.error('Delete error:', err);
+                          setError(err.response?.data?.detail || '予約の削除に失敗しました');
+                        } finally {
+                          setLoading(false);
+                        }
+                      }
+                    }}
+                    className="delete-form-button"
+                    disabled={loading}
+                  >
+                    予約削除
+                  </button>
+                )}
+                
                 <button 
                   type="button" 
                   onClick={() => {
