@@ -201,15 +201,18 @@ frontend:
         comment: "Date navigation working, showing Japanese date format"
   - task: "Reservation form with time pickers"
     implemented: true
-    working: "NA"
+    working: true
     file: "App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Form implemented with bench selection, user name, start/end time inputs"
+      - working: true
+        agent: "testing"
+        comment: "Reservation form with time pickers is working correctly. The form includes bench selection (手前/奥), user name input, and start/end time pickers with proper validation."
   - task: "Timeline view for both benches"
     implemented: true
     working: true
