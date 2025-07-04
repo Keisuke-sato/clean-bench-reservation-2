@@ -135,15 +135,18 @@ backend:
         comment: "JST timezone handling is working correctly. All API responses include proper JST timezone (+09:00). The parse_jst_time function correctly converts times to JST."
   - task: "Double-booking prevention algorithm"
     implemented: true
-    working: "NA"
+    working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented check_time_overlap and check_double_booking functions"
+      - working: true
+        agent: "testing"
+        comment: "Double-booking prevention is working correctly. Attempting to create overlapping reservations returns a 409 Conflict status with the Japanese error message 'この時間帯は既に予約されています'."
   - task: "CRUD API endpoints for reservations"
     implemented: true
     working: "NA"
