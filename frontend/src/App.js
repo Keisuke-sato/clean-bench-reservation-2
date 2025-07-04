@@ -128,11 +128,11 @@ const App = () => {
     });
   };
 
-  // Generate time slots for timetable (every 15 minutes for performance)
+  // Generate time slots for timetable (every 30 minutes, 7:00-22:00)
   const generateTimeSlots = () => {
     const slots = [];
-    for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 15) {
+    for (let hour = 7; hour <= 22; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         slots.push(timeString);
       }
