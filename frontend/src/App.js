@@ -93,32 +93,6 @@ const App = () => {
     }
   };
 
-  // Delete reservation
-  const deleteReservation = async (id) => {
-    try {
-      // 確認ダイアログを表示
-      const confirmed = window.confirm('この予約を削除してもよろしいですか？\nこの操作は取り消せません。');
-      if (!confirmed) return;
-      
-      setLoading(true);
-      setError(''); // エラーをクリア
-      
-      const response = await axios.delete(`${API}/reservations/${id}`);
-      
-      // 削除成功
-      await loadReservations();
-      
-      // 成功メッセージは一時的に表示（オプション）
-      console.log('予約が正常に削除されました');
-      
-    } catch (err) {
-      console.error('Delete error:', err);
-      setError(err.response?.data?.detail || '予約の削除に失敗しました');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Start editing
   const startEdit = (reservation) => {
     const startTime = new Date(reservation.start_time).toTimeString().substring(0, 5);
