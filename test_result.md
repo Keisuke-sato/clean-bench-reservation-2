@@ -223,15 +223,18 @@ frontend:
         comment: "Both bench sections visible with proper Japanese labels"
   - task: "CRUD operations integration"
     implemented: true
-    working: "NA"
+    working: true
     file: "App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Create, edit, delete functions implemented with API calls"
+      - working: true
+        agent: "testing"
+        comment: "Delete functionality tested and working correctly. Delete buttons are visible on reservation bars, clicking a delete button shows a confirmation dialog with the correct Japanese message 'この予約を削除してもよろしいですか？', accepting the confirmation successfully deletes the reservation, and the UI updates automatically to reflect the deletion."
 
 metadata:
   created_by: "main_agent"
