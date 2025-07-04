@@ -149,9 +149,13 @@ const App = () => {
     const endMinutes = endDate.getHours() * 60 + endDate.getMinutes();
     const durationMinutes = endMinutes - startMinutes;
     
-    // Each 15-minute slot is 40px high
-    const pixelsPerMinute = 40 / 15;
-    const top = startMinutes * pixelsPerMinute;
+    // 7:00 (420分) を基準点として調整
+    const baseOffsetMinutes = 7 * 60; // 7:00 = 420分
+    const adjustedStartMinutes = startMinutes - baseOffsetMinutes;
+    
+    // Each 30-minute slot is 40px high
+    const pixelsPerMinute = 40 / 30;
+    const top = adjustedStartMinutes * pixelsPerMinute;
     const height = durationMinutes * pixelsPerMinute;
     
     return { top, height };
