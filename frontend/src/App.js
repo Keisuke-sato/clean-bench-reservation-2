@@ -204,6 +204,7 @@ const App = () => {
       <div className="container">
         <header className="header">
           <h1>クリーンベンチ予約システム</h1>
+          <p className="version-info">バージョン 2.0 - 改善版</p>
         </header>
 
         {/* Date Navigation */}
