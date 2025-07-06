@@ -133,6 +133,31 @@ async def check_double_booking(bench_id: str, start_time: str, end_time: str, ex
 async def root():
     return {"message": "ベンチ予約システム API", "current_time_jst": datetime.now(JST).isoformat()}
 
+@api_router.get("/health")
+async def health_check():
+    """System health check endpoint"""
+    try:
+        # MongoDB接続テスト
+        start_time = datetime.now()
+        await asyncio.wait_for(
+            db.reservations.find_one(),
+            timeout=5.0
+        )
+        response_time = (datetime.now() - start_time).total_seconds()
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now(JST).isoformat(),
+            "database": "connected",
+            "database_response_time": f"{response_time:.3f}s"
+        }
+    except asyncio.TimeoutError:
+        logger.error("ヘルスチェック: データベース接続タイムアウト")
+        raise HTTPException(status_code=503, detail="データベース接続タイムアウト")
+    except Exception as e:
+        logger.error(f"ヘルスチェック: {str(e)}")
+        raise HTTPException(status_code=503, detail=f"システムエラー: {str(e)}")
+
 @api_router.post("/reservations", response_model=Reservation)
 async def create_reservation(reservation_data: ReservationCreate):
     """Create a new reservation"""
