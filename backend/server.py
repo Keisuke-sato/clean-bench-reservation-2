@@ -15,9 +15,18 @@ from dateutil import parser
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
+# MongoDB connection with improved settings
 mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
+client = AsyncIOMotorClient(
+    mongo_url,
+    maxPoolSize=50,           # 最大接続数
+    minPoolSize=5,            # 最小接続数
+    maxIdleTimeMS=30000,      # アイドル接続のタイムアウト (30秒)
+    serverSelectionTimeoutMS=5000,  # サーバー選択タイムアウト (5秒)
+    connectTimeoutMS=10000,   # 接続タイムアウト (10秒)
+    socketTimeoutMS=20000,    # ソケットタイムアウト (20秒)
+    retryWrites=True          # 書き込みリトライ
+)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
