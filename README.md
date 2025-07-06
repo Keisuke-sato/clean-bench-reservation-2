@@ -31,4 +31,4 @@
 
 ## ライセンス
 
-MIT License
+MIT License# 最終更新: Sun Jul  6 13:03:31 UTC 2025
