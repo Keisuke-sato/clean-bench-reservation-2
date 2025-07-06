@@ -40,6 +40,17 @@ body {
   font-weight: 700;
 }
 
+.header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-top: 5px;
+}
+
+.version-info {
+  font-size: 0.9rem !important;
+  opacity: 0.7 !important;
+}
+
 .date-navigation {
   display: flex;
   justify-content: center;
