@@ -430,10 +430,95 @@ async def get_benches():
         ]
     }
 
-@api_router.get("/current-time")
-async def get_current_time():
-    """Get current JST time"""
-    return {"current_time_jst": datetime.now(JST).isoformat()}
+@api_router.post("/cleanup/old-data")
+async def cleanup_old_data(days_to_keep: int = 30):
+    """過去の予約データを削除（デフォルト30日前より古いデータ）"""
+    if days_to_keep < 7:
+        raise HTTPException(status_code=400, detail="保持期間は最低7日必要です")
+    
+    logger.info(f"=== 古いデータクリーンアップ開始 ===")
+    logger.info(f"保持期間: {days_to_keep}日")
+    
+    try:
+        # データベース接続確認
+        if not await ensure_database_connection():
+            raise HTTPException(status_code=503, detail="データベース接続に問題があります")
+        
+        # 削除基準日時を計算
+        cutoff_date = datetime.now() - timedelta(days=days_to_keep)
+        cutoff_jst = JST.localize(cutoff_date.replace(hour=0, minute=0, second=0, microsecond=0))
+        logger.info(f"削除基準日時: {cutoff_jst.isoformat()}")
+        
+        # 削除対象データの確認
+        query = {"start_time": {"$lt": cutoff_jst.isoformat()}}
+        old_reservations = await db.reservations.find(query).to_list(1000)
+        logger.info(f"削除対象の予約数: {len(old_reservations)}")
+        
+        if len(old_reservations) == 0:
+            return {
+                "message": "削除対象のデータはありません",
+                "deleted_count": 0,
+                "cutoff_date": cutoff_jst.isoformat()
+            }
+        
+        # 削除実行
+        delete_result = await db.reservations.delete_many(query)
+        deleted_count = delete_result.deleted_count
+        
+        logger.info(f"削除完了: {deleted_count}件")
+        
+        return {
+            "message": f"古い予約データを削除しました",
+            "deleted_count": deleted_count,
+            "cutoff_date": cutoff_jst.isoformat(),
+            "days_kept": days_to_keep
+        }
+        
+    except Exception as e:
+        logger.error(f"データクリーンアップエラー: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"データクリーンアップ中にエラーが発生しました: {str(e)}")
+
+@api_router.get("/cleanup/status")
+async def cleanup_status():
+    """データベースの状況とクリーンアップ情報を取得"""
+    try:
+        # データベース接続確認
+        if not await ensure_database_connection():
+            raise HTTPException(status_code=503, detail="データベース接続に問題があります")
+        
+        # 全予約数を取得
+        total_count = await db.reservations.count_documents({})
+        
+        # 今日以降の予約数
+        today = datetime.now().date()
+        today_jst = JST.localize(datetime.combine(today, datetime.min.time()))
+        future_count = await db.reservations.count_documents({
+            "start_time": {"$gte": today_jst.isoformat()}
+        })
+        
+        # 過去の予約数
+        past_count = total_count - future_count
+        
+        # 30日より古いデータ数
+        cutoff_30_days = datetime.now() - timedelta(days=30)
+        cutoff_30_jst = JST.localize(cutoff_30_days.replace(hour=0, minute=0, second=0, microsecond=0))
+        old_count = await db.reservations.count_documents({
+            "start_time": {"$lt": cutoff_30_jst.isoformat()}
+        })
+        
+        return {
+            "total_reservations": total_count,
+            "future_reservations": future_count,
+            "past_reservations": past_count,
+            "old_data_30days": old_count,
+            "cleanup_recommended": old_count > 0,
+            "database_status": "healthy" if connection_status["healthy"] else "unhealthy",
+            "last_check": connection_status["last_check"]
+        }
+        
+    except Exception as e:
+        logger.error(f"ステータス取得エラー: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"ステータス取得中にエラーが発生しました: {str(e)}")
 
 # Include the router in the main app
 app.include_router(api_router)
