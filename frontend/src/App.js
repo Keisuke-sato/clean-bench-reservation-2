@@ -243,7 +243,36 @@ const App = () => {
     return colors[index % colors.length];
   };
 
-  const timeSlots = generateTimeSlots();
+  // Auto cleanup old data function
+  const cleanupOldData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const response = await axios.post(`${API}/cleanup/old-data`, {}, {
+        timeout: 15000 // 15秒タイムアウト
+      });
+      
+      console.log('クリーンアップ完了:', response.data);
+      
+      // 成功メッセージを表示
+      if (response.data.deleted_count > 0) {
+        alert(`✅ ${response.data.deleted_count}件の古い予約データを削除しました`);
+      } else {
+        alert('ℹ️ 削除対象のデータはありませんでした');
+      }
+      
+      // 予約リストを更新
+      await loadReservations();
+      
+    } catch (err) {
+      console.error('クリーンアップエラー:', err);
+      const errorMessage = err.response?.data?.detail || 'データクリーンアップに失敗しました';
+      setError(`クリーンアップエラー: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="app">
