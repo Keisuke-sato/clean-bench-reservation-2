@@ -32,3 +32,4 @@
 ## ライセンス
 
 MIT License# 最終更新: Sun Jul  6 13:03:31 UTC 2025
+# vercel設定テスト Mon Jul  7 09:03:34 UTC 2025
