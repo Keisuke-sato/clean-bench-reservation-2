@@ -168,9 +168,27 @@ body {
   box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
 }
 
-.retry-button:disabled {
+.cleanup-button {
+  background: linear-gradient(135deg, #fd7e14 0%, #e85d04 100%);
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.cleanup-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(253, 126, 20, 0.3);
+}
+
+.cleanup-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 .error-message {
