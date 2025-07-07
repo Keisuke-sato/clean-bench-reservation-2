@@ -274,6 +274,8 @@ const App = () => {
     }
   };
 
+  const timeSlots = generateTimeSlots();
+
   return (
     <div className="app">
       <div className="container">
