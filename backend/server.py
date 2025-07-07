@@ -220,20 +220,33 @@ async def create_reservation(reservation_data: ReservationCreate):
 
 @api_router.get("/reservations", response_model=List[Reservation])
 async def get_reservations(date: Optional[str] = None, bench_id: Optional[str] = None):
-    """Get reservations, optionally filtered by date and/or bench_id"""
-    logger.info(f"=== 予約取得リクエスト ===")
+    """Get reservations with comprehensive error handling and optimization"""
+    logger.info(f"=== 予約取得リクエスト開始 ===")
     logger.info(f"日付: {date}, ベンチID: {bench_id}")
+    
+    # データベース接続確認
+    if not await ensure_database_connection():
+        raise HTTPException(status_code=503, detail="データベース接続に問題があります。しばらく待ってから再試行してください。")
     
     try:
         query = {}
         
+        # ベンチIDフィルター
         if bench_id:
+            if bench_id not in ['front', 'back']:
+                raise HTTPException(status_code=400, detail="無効なベンチIDです")
             query["bench_id"] = bench_id
         
+        # 日付フィルター（最適化）
         if date:
-            # Parse date and get start/end of day in JST
             try:
                 date_obj = parser.parse(date).date()
+                # 過去30日より古いデータは取得しない（パフォーマンス向上）
+                min_date = datetime.now().date() - timedelta(days=30)
+                if date_obj < min_date:
+                    logger.info(f"古すぎる日付のリクエスト: {date}")
+                    return []  # 空のリストを返す
+                
                 start_of_day = JST.localize(datetime.combine(date_obj, datetime.min.time()))
                 end_of_day = JST.localize(datetime.combine(date_obj, datetime.max.time()))
                 
@@ -242,41 +255,77 @@ async def get_reservations(date: Optional[str] = None, bench_id: Optional[str] =
                     "$lt": end_of_day.isoformat()
                 }
                 logger.info(f"日付フィルター: {start_of_day.isoformat()} - {end_of_day.isoformat()}")
+                
             except Exception as date_error:
                 logger.error(f"日付解析エラー: {str(date_error)}")
                 raise HTTPException(status_code=400, detail="無効な日付形式です")
         
         logger.info(f"MongoDB クエリ: {query}")
         
-        # Database query with timeout
+        # データベースクエリの実行（複数段階のタイムアウト）
+        reservations = []
+        for attempt in range(3):  # 最大3回試行
+            try:
+                logger.info(f"データベースクエリ実行（試行 {attempt + 1}/3）")
+                reservations = await asyncio.wait_for(
+                    db.reservations.find(query).to_list(500),  # 制限を500に削減
+                    timeout=5.0 + (attempt * 2)  # 段階的にタイムアウトを延長
+                )
+                logger.info(f"取得された予約数: {len(reservations)}")
+                break  # 成功したらループを抜ける
+                
+            except asyncio.TimeoutError:
+                logger.warning(f"データベースクエリタイムアウト（試行 {attempt + 1}）")
+                if attempt == 2:  # 最後の試行
+                    # 接続状態を不健全にマーク
+                    connection_status["healthy"] = False
+                    raise HTTPException(
+                        status_code=504, 
+                        detail="データベースの応答が遅くなっています。しばらく待ってから再試行してください。"
+                    )
+                await asyncio.sleep(1)  # 1秒待機してリトライ
+                
+            except Exception as db_error:
+                logger.error(f"データベースエラー（試行 {attempt + 1}）: {str(db_error)}")
+                if attempt == 2:  # 最後の試行
+                    connection_status["healthy"] = False
+                    raise HTTPException(
+                        status_code=500, 
+                        detail="データベースエラーが発生しました。システム管理者にお問い合わせください。"
+                    )
+                await asyncio.sleep(1)
+        
+        # データ検証とソート
         try:
-            reservations = await asyncio.wait_for(
-                db.reservations.find(query).to_list(1000),
-                timeout=10.0  # 10秒タイムアウト
-            )
-            logger.info(f"取得された予約数: {len(reservations)}")
+            # 無効なデータをフィルタリング
+            valid_reservations = []
+            for reservation in reservations:
+                if all(key in reservation for key in ['id', 'bench_id', 'user_name', 'start_time', 'end_time']):
+                    valid_reservations.append(reservation)
+                else:
+                    logger.warning(f"無効な予約データを検出: {reservation}")
             
-        except asyncio.TimeoutError:
-            logger.error("データベースクエリタイムアウト")
-            raise HTTPException(status_code=504, detail="データベースの応答がタイムアウトしました。しばらく待ってから再試行してください。")
-        
-        except Exception as db_error:
-            logger.error(f"データベースエラー: {str(db_error)}")
-            raise HTTPException(status_code=500, detail=f"データベースエラーが発生しました: {str(db_error)}")
-        
-        # Sort by start time
-        reservations.sort(key=lambda x: x['start_time'])
-        
-        logger.info(f"=== 予約取得成功 ===")
-        return [Reservation(**reservation) for reservation in reservations]
+            # 開始時刻でソート
+            valid_reservations.sort(key=lambda x: x['start_time'])
+            logger.info(f"有効な予約数: {len(valid_reservations)}")
+            
+            return [Reservation(**reservation) for reservation in valid_reservations]
+            
+        except Exception as process_error:
+            logger.error(f"データ処理エラー: {str(process_error)}")
+            raise HTTPException(status_code=500, detail="予約データの処理中にエラーが発生しました")
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"=== 予約取得処理中にエラー発生 ===")
+        logger.error(f"=== 予約取得処理中に予期しないエラー発生 ===")
         logger.error(f"エラー内容: {str(e)}")
         logger.error(f"エラータイプ: {type(e)}")
-        raise HTTPException(status_code=500, detail=f"予約取得処理中にエラーが発生しました: {str(e)}")
+        connection_status["healthy"] = False
+        raise HTTPException(
+            status_code=500, 
+            detail="予約取得処理中に予期しないエラーが発生しました。しばらく待ってから再試行してください。"
+        )
 
 @api_router.get("/reservations/{reservation_id}", response_model=Reservation)
 async def get_reservation(reservation_id: str):
