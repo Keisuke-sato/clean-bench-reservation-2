@@ -297,7 +297,7 @@ const App = () => {
           </button>
         </div>
 
-        {/* Create Reservation Button & Manual Refresh */}
+        {/* Create Reservation Button & Manual Refresh & Cleanup */}
         <div className="action-buttons">
           <button 
             onClick={() => {
@@ -320,6 +320,19 @@ const App = () => {
             title="予約一覧を手動で更新"
           >
             {loading ? '🔄 更新中...' : '🔄 更新'}
+          </button>
+          
+          <button 
+            onClick={() => {
+              if (window.confirm('30日より古い予約データを削除します。\nこの操作は取り消せません。\n実行しますか？')) {
+                cleanupOldData();
+              }
+            }}
+            className="cleanup-button"
+            disabled={loading}
+            title="30日より古い予約データを削除してデータベース容量を節約"
+          >
+            {loading ? '🧹 削除中...' : '🧹 古いデータ削除'}
           </button>
         </div>
 
