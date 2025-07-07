@@ -16,19 +16,25 @@ import asyncio
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection with improved settings
+# MongoDB connection with improved connection pooling
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(
     mongo_url,
-    maxPoolSize=50,           # 最大接続数
-    minPoolSize=5,            # 最小接続数
-    maxIdleTimeMS=30000,      # アイドル接続のタイムアウト (30秒)
+    maxPoolSize=10,           # 接続プール削減（無料プランに配慮）
+    minPoolSize=2,            # 最小接続数
+    maxIdleTimeMS=60000,      # アイドル接続のタイムアウト (1分)
     serverSelectionTimeoutMS=5000,  # サーバー選択タイムアウト (5秒)
     connectTimeoutMS=10000,   # 接続タイムアウト (10秒)
-    socketTimeoutMS=20000,    # ソケットタイムアウト (20秒)
-    retryWrites=True          # 書き込みリトライ
+    socketTimeoutMS=15000,    # ソケットタイムアウト (15秒)
+    retryWrites=True,         # 書き込みリトライ
+    retryReads=True,          # 読み込みリトライ追加
+    heartbeatFrequencyMS=30000,  # ハートビート頻度 (30秒)
+    maxConnecting=2           # 同時接続試行数制限
 )
 db = client[os.environ['DB_NAME']]
+
+# 接続状態監視用のグローバル変数
+connection_status = {"healthy": True, "last_check": None}
 
 # Create the main app without a prefix
 app = FastAPI()
