@@ -33,8 +33,32 @@ client = AsyncIOMotorClient(
 )
 db = client[os.environ['DB_NAME']]
 
-# 接続状態監視用のグローバル変数
-connection_status = {"healthy": True, "last_check": None}
+async def check_database_connection():
+    """データベース接続を確認し、必要に応じて再接続"""
+    global connection_status
+    try:
+        start_time = datetime.now()
+        # 軽量なping操作
+        await asyncio.wait_for(client.admin.command('ping'), timeout=3.0)
+        response_time = (datetime.now() - start_time).total_seconds()
+        
+        connection_status["healthy"] = True
+        connection_status["last_check"] = datetime.now(JST).isoformat()
+        logger.info(f"データベース接続確認成功: {response_time:.3f}秒")
+        return True
+        
+    except Exception as e:
+        connection_status["healthy"] = False
+        connection_status["last_check"] = datetime.now(JST).isoformat()
+        logger.error(f"データベース接続確認失敗: {str(e)}")
+        return False
+
+async def ensure_database_connection():
+    """データベース接続を保証"""
+    if not connection_status["healthy"]:
+        logger.info("データベース再接続を試行")
+        return await check_database_connection()
+    return True
 
 # Create the main app without a prefix
 app = FastAPI()
