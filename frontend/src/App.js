@@ -21,43 +21,89 @@ const App = () => {
     end_time: ''
   });
 
-  // Load reservations for selected date with retry functionality
+  // Load reservations for selected date with comprehensive error handling
   const loadReservations = async (retryCount = 0, maxRetries = 3) => {
     try {
       console.log(`予約読み込み開始 (試行 ${retryCount + 1}/${maxRetries + 1}):`, selectedDate);
       setLoading(true);
       setError(''); // エラーをクリア
       
-      const response = await axios.get(`${API}/reservations`, {
+      // リクエスト設定の最適化
+      const requestConfig = {
         params: { date: selectedDate },
-        timeout: 10000 // 10秒タイムアウト
+        timeout: 8000 + (retryCount * 2000), // 段階的にタイムアウトを延長
+        validateStatus: function (status) {
+          return status >= 200 && status < 300; // デフォルト
+        },
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      const response = await axios.get(`${API}/reservations`, requestConfig);
+      
+      // レスポンスデータの検証
+      if (!Array.isArray(response.data)) {
+        throw new Error('サーバーから無効なデータ形式が返されました');
+      }
+      
+      // データの妥当性チェック
+      const validReservations = response.data.filter(reservation => {
+        return reservation && 
+               reservation.id && 
+               reservation.bench_id && 
+               reservation.user_name && 
+               reservation.start_time && 
+               reservation.end_time;
       });
       
-      console.log('予約データ取得成功:', response.data);
-      setReservations(response.data);
+      if (validReservations.length !== response.data.length) {
+        console.warn(`無効な予約データを除外: ${response.data.length - validReservations.length}件`);
+      }
+      
+      console.log('予約データ取得成功:', validReservations);
+      setReservations(validReservations);
       
     } catch (err) {
       console.error(`予約読み込みエラー (試行 ${retryCount + 1}):`, err);
       
-      // 自動リトライ判定
-      const shouldRetry = retryCount < maxRetries && (
+      // エラー分類と自動リトライ判定
+      const isRetryableError = (
         err.code === 'ECONNABORTED' || // タイムアウト
         err.code === 'NETWORK_ERROR' || // ネットワークエラー
-        (err.response && err.response.status >= 500) // サーバーエラー
+        err.code === 'ERR_NETWORK' ||   // ネットワークエラー (axios)
+        (err.response && err.response.status >= 500) || // サーバーエラー
+        (err.response && err.response.status === 503) || // サービス利用不可
+        (err.response && err.response.status === 504)    // タイムアウト
       );
       
+      const shouldRetry = retryCount < maxRetries && isRetryableError;
+      
       if (shouldRetry) {
-        console.log(`${2 ** retryCount}秒後に自動リトライします...`);
-        setError(`読み込み中です... (${retryCount + 1}回目再試行)`);
+        const delay = Math.min(1000 * (2 ** retryCount), 8000); // 最大8秒
+        console.log(`${delay/1000}秒後に自動リトライします...`);
+        setError(`接続中です... (${retryCount + 1}回目再試行中)`);
         
         setTimeout(() => {
           loadReservations(retryCount + 1, maxRetries);
-        }, 1000 * (2 ** retryCount)); // 指数バックオフ (1秒, 2秒, 4秒)
+        }, delay);
         
       } else {
-        // 最大リトライ回数に達した場合
-        const errorMessage = err.response?.data?.detail || err.message || '予約の読み込みに失敗しました';
-        setError(`読み込みエラー: ${errorMessage}`);
+        // 最大リトライ回数に達した場合またはリトライ不可エラー
+        let errorMessage = '予約の読み込みに失敗しました';
+        
+        if (err.response) {
+          // サーバーエラーレスポンスがある場合
+          errorMessage = err.response.data?.detail || 
+                        `サーバーエラー (${err.response.status})`;
+        } else if (err.code === 'ECONNABORTED' || err.code === 'ERR_NETWORK') {
+          errorMessage = 'ネットワーク接続に問題があります';
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        setError(errorMessage);
         console.error('最大リトライ回数に達しました:', err);
       }
     } finally {
