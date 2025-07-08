@@ -558,6 +558,5 @@ async def shutdown_db_client():
 # For Vercel deployment compatibility
 from mangum import Mangum
 
-def handler(event, context):
-    """Vercel serverless function handler"""
-    return Mangum(app)(event, context)
+# Create the handler for Vercel
+app = Mangum(app)
