@@ -154,7 +154,7 @@ const App = () => {
         end_time: `${selectedDate}T${formData.end_time}:00`
       };
       
-      await axios.post(`${API}/reservations`, reservationData);
+      await api.post('/reservations', reservationData);
       
       // Reset form and refresh
       setFormData({ bench_id: 'front', user_name: '', start_time: '', end_time: '' });
