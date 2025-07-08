@@ -65,7 +65,17 @@ def generate_test_reservation(bench_id="front", hours_from_now=24, duration_minu
     now = datetime.datetime.now(JST)
     # Use a time far in the future to avoid conflicts
     start_time = now + datetime.timedelta(hours=hours_from_now)
+    # Ensure start time is within 7:00-22:00 and on a 30-minute increment
+    start_time = start_time.replace(
+        hour=max(7, min(21, start_time.hour)),  # Between 7:00 and 21:00
+        minute=0 if start_time.minute < 30 else 30,  # Either 0 or 30 minutes
+        second=0,
+        microsecond=0
+    )
     end_time = start_time + datetime.timedelta(minutes=duration_minutes)
+    # Ensure end time is within 7:00-22:00 and on a 30-minute increment
+    if end_time.hour >= 22:
+        end_time = end_time.replace(hour=22, minute=0)
     
     return {
         "bench_id": bench_id,
