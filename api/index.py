@@ -68,8 +68,8 @@ async def ensure_database_connection():
 # Create the main app without a prefix
 app = FastAPI()
 
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
+# Create a router without prefix (Vercel already routes /api to this file)
+api_router = APIRouter()
 
 # Japan Standard Time timezone
 JST = pytz.timezone('Asia/Tokyo')
