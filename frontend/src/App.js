@@ -180,7 +180,7 @@ const App = () => {
         end_time: `${selectedDate}T${formData.end_time}:00`
       };
       
-      await axios.put(`${API}/reservations/${editingReservation.id}`, updateData);
+      await api.put(`/reservations/${editingReservation.id}`, updateData);
       
       // Reset form and refresh
       setFormData({ bench_id: 'front', user_name: '', start_time: '', end_time: '' });
