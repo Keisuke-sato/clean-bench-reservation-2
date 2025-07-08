@@ -362,6 +362,18 @@ const App = () => {
           </button>
         </div>
 
+        {/* 予約ルール */}
+        <div className="reservation-rules">
+          <h3>📋 予約ルール</h3>
+          <ul>
+            <li>当日・翌日（金曜日の場合は月曜日を翌日とする）のみの予約が可能。</li>
+            <li>可能な限り予約した時間内に利用を終了すること。</li>
+            <li>予約時間より早く終えた場合は、予約表に反映すること。（可能であれば次の予約者に連絡）</li>
+            <li>利用不可時のキャンセルは即時行うこと。</li>
+            <li>次の予約者の予約時間まで延長してしまう場合は直接連絡を取ること。</li>
+          </ul>
+        </div>
+
         {/* Error Message with Retry Option */}
         {error && (
           <div className="error-container">
