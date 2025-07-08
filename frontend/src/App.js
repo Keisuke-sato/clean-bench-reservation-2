@@ -67,7 +67,7 @@ const App = () => {
         }
       };
       
-      const response = await axios.get(`${API}/reservations`, requestConfig);
+      const response = await api.get('/reservations', requestConfig);
       
       // レスポンスデータの検証
       if (!Array.isArray(response.data)) {
