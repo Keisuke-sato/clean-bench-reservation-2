@@ -141,7 +141,7 @@ const App = () => {
     } catch (err) {
       setError(err.response?.data?.detail || '予約の作成に失敗しました');
     } finally {
-      setLoading(false);-const BACKEND_UR
+      setLoading(false);
     }
   };
 
