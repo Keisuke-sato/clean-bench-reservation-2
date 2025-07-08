@@ -407,11 +407,10 @@ const App = () => {
                   required
                   placeholder="お名前を入力してください"
                   maxLength={50}
-                  pattern="[^<>\"'&]*"
-                  title="1文字以上50文字以下で入力してください（<>\"'&は使用不可）"
+                  title="1文字以上50文字以下で入力してください"
                 />
                 <small style={{color: '#666', fontSize: '0.8rem'}}>
-                  1-50文字（特殊文字 &lt;&gt;&quot;'&amp; は使用不可）
+                  1-50文字（特殊文字は使用不可）
                 </small>
               </div>
 
