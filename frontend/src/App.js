@@ -2,10 +2,32 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
 
-// ---------- API エンドポイント生成 ----------
-const BACKEND_URL = (process.env.REACT_APP_BACKEND_URL || "").replace(/\/+$/, "");
-const API        = `${BACKEND_URL ? BACKEND_URL : ""}/api`;
-const api        = axios.create({ baseURL: API });
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Create axios instance with common configuration
+const api = axios.create({
+  baseURL: `${BACKEND_URL}/api`,
+  timeout: 10000,
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  }
+});
+
+// Add request interceptor for debugging
+api.interceptors.request.use((config) => {
+  console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
+  return config;
+});
+
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error);
+    return Promise.reject(error);
+  }
+);
 
 
 
