@@ -527,10 +527,12 @@ async def cleanup_status():
         raise HTTPException(status_code=500, detail=f"ステータス取得中にエラーが発生しました: {str(e)}")
 
 # Include the router in the main app
+app.include_router(api_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["https://clean-bench-reservation.vercel.app"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
