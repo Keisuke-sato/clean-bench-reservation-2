@@ -615,7 +615,11 @@ def run_all_tests():
     # Basic tests
     test_api_health()
     test_bench_info()
-    test_current_time()
+    test_database_connectivity()
+    
+    # Time validation tests
+    test_time_range_validation()
+    test_30min_increments_validation()
     
     # Reservation CRUD tests
     front_success, back_success, front_id, back_id = test_create_reservation()
