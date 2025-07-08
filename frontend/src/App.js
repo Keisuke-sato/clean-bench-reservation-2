@@ -479,7 +479,7 @@ const App = () => {
                           setError('');
                           
                           // DELETE リクエスト送信
-                          const response = await axios.delete(`${API}/reservations/${editingReservation.id}`);
+                          const response = await api.delete(`/reservations/${editingReservation.id}`);
                           console.log('✅ 削除成功:', response.data);
                           
                           // 状態をリセット
