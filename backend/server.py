@@ -8,8 +8,14 @@ from pathlib import Path
 from pydantic import BaseModel, Field, validator
 from typing import List, Optional
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 import pytz
+
+connection_status = {
+    "healthy": True,
+    "last_check": datetime.now(pytz.timezone("Asia/Tokyo")).isoformat(),
+}
+
 from dateutil import parser
 import asyncio
 
@@ -32,6 +38,12 @@ client = AsyncIOMotorClient(
     maxConnecting=2           # 同時接続試行数制限
 )
 db = client[os.environ['DB_NAME']]
+
++# ------ ファイル冒頭付近に追加 / 置換 (検索: "from datetime import") ------
++connection_status = {
++    "healthy": True,
++    "last_check": datetime.now(pytz.timezone('Asia/Tokyo')).isoformat()
++}
 
 async def check_database_connection():
     """データベース接続を確認し、必要に応じて再接続"""
@@ -521,15 +533,14 @@ async def cleanup_status():
         raise HTTPException(status_code=500, detail=f"ステータス取得中にエラーが発生しました: {str(e)}")
 
 # Include the router in the main app
-app.include_router(api_router)
-
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=["https://clean-bench-reservation.vercel.app"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Configure logging
 logging.basicConfig(

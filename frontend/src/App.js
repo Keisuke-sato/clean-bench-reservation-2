@@ -2,8 +2,12 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// ---------- API エンドポイント生成 ----------
+const BACKEND_URL = (process.env.REACT_APP_BACKEND_URL || "").replace(/\/+$/, "");
+const API        = `${BACKEND_URL ? BACKEND_URL : ""}/api`;
+const api        = axios.create({ baseURL: API });
+
+
 
 const App = () => {
   const [reservations, setReservations] = useState([]);
@@ -137,7 +141,7 @@ const App = () => {
     } catch (err) {
       setError(err.response?.data?.detail || '予約の作成に失敗しました');
     } finally {
-      setLoading(false);
+      setLoading(false);-const BACKEND_UR
     }
   };
 
