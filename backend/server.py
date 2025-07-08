@@ -33,11 +33,10 @@ client = AsyncIOMotorClient(
 )
 db = client[os.environ['DB_NAME']]
 
-+# ------ ファイル冒頭付近に追加 / 置換 (検索: "from datetime import") ------
-+connection_status = {
-+    "healthy": True,
-+    "last_check": datetime.now(pytz.timezone('Asia/Tokyo')).isoformat()
-+}
+connection_status = {
+    "healthy": True,
+    "last_check": datetime.now(pytz.timezone('Asia/Tokyo')).isoformat()
+}
 
 async def check_database_connection():
     """データベース接続を確認し、必要に応じて再接続"""
@@ -545,7 +544,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -557,4 +555,6 @@ logger = logging.getLogger(__name__)
 async def shutdown_db_client():
     client.close()
 
-
+# For Vercel deployment compatibility
+from mangum import Mangum
+handler = Mangum(app)
