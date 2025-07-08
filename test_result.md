@@ -264,12 +264,12 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Vercel deployment configuration"
     - "CRUD API endpoints for reservations"
     - "Double-booking prevention algorithm"
     - "JST timezone handling and datetime utilities"
-    - "Reservation form with time pickers"
-    - "CRUD operations integration"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Vercel deployment configuration"
   test_all: false
   test_priority: "high_first"
 
@@ -284,3 +284,5 @@ agent_communication:
     message: "Successfully tested the new delete functionality in the edit form. The delete button ('予約削除') is correctly located inside the edit form, not on the reservation bars themselves. When clicking on a reservation bar, the edit form opens with the reservation data populated. Clicking the delete button shows a confirmation dialog with the message 'この予約を削除してもよろしいですか？この操作は取り消せません。' After accepting the confirmation, the reservation is successfully deleted, the form closes automatically, and the timetable updates to reflect the deletion. The delete functionality is working as expected."
   - agent: "testing"
     message: "Conducted additional testing of the delete functionality with automatic confirmation acceptance. The test successfully verified that: 1) Clicking on a reservation bar opens the edit form with reservation data populated, 2) The delete button is visible and clickable in the edit form, 3) Clicking the delete button shows a confirmation dialog with detailed information about the reservation being deleted, 4) When the confirmation is automatically accepted, the reservation is successfully deleted from the database, 5) The edit form closes automatically after deletion, 6) The UI updates to reflect the deletion with the reservation bar removed from the timetable. The delete functionality is working correctly and meets all the requirements specified in the test request."
+  - agent: "main"
+    message: "Fixed Vercel deployment configuration by adding Mangum handler for FastAPI compatibility, simplified vercel.json routes, and added mangum dependency. Need to test backend API endpoints again after deployment configuration changes."
