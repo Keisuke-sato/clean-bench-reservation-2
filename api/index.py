@@ -555,6 +555,10 @@ app.add_middleware(
 async def shutdown_db_client():
     client.close()
 
-# For Vercel deployment compatibility
+# For Vercel deployment compatibility - proper serverless function export
 from mangum import Mangum
-handler = Mangum(app)
+
+def handler(event, context):
+    """Vercel serverless function handler"""
+    asgi_handler = Mangum(app)
+    return asgi_handler(event, context)
