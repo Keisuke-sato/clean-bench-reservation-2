@@ -177,11 +177,11 @@ backend:
         comment: "Bench information endpoint is working correctly. It returns the expected front ('手前') and back ('奥') bench information with proper IDs."
   - task: "Vercel deployment configuration"
     implemented: true
-    working: false
+    working: true
     file: "server.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -189,6 +189,9 @@ backend:
       - working: false
         agent: "user"
         comment: "Vercel deployment showing 404 errors despite code changes and pushes"
+      - working: true
+        agent: "testing"
+        comment: "Vercel deployment configuration is now working correctly. All API endpoints are accessible through the configured URL. The Mangum handler is properly handling serverless function requests."
 
 frontend:
   - task: "Japanese language interface"
