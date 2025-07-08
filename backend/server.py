@@ -564,3 +564,7 @@ handler = Mangum(app)
 # For Vercel deployment compatibility
 from mangum import Mangum
 handler = Mangum(app)
+
+# For Vercel deployment compatibility
+from mangum import Mangum
+handler = Mangum(app)
