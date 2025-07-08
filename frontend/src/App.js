@@ -275,7 +275,7 @@ const App = () => {
       setLoading(true);
       setError('');
       
-      const response = await axios.post(`${API}/cleanup/old-data`, {}, {
+      const response = await api.post('/cleanup/old-data', {}, {
         timeout: 15000 // 15秒タイムアウト
       });
       
