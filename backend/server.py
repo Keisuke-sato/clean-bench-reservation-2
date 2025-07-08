@@ -557,6 +557,4 @@ logger = logging.getLogger(__name__)
 async def shutdown_db_client():
     client.close()
 
-# For Vercel deployment compatibility
-from mangum import Mangum
-handler = Mangum(app)
+
