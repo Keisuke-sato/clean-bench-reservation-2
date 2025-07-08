@@ -533,20 +533,13 @@ async def cleanup_status():
         raise HTTPException(status_code=500, detail=f"ステータス取得中にエラーが発生しました: {str(e)}")
 
 # Include the router in the main app
--app.add_middleware(
--    CORSMiddleware,
--    allow_credentials=True,
--    allow_origins=["*"],
--    allow_methods=["*"],
--    allow_headers=["*"],
--)
-+app.add_middleware(
-+    CORSMiddleware,
-+    allow_credentials=True,
-+    allow_origins=["https://clean-bench-reservation.vercel.app"],  # ←デプロイ先ドメイン
-+    allow_methods=["*"],
-+    allow_headers=["*"],
-+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["https://clean-bench-reservation.vercel.app"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Configure logging
