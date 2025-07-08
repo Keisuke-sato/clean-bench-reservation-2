@@ -258,6 +258,17 @@ frontend:
       - working: true
         agent: "testing"
         comment: "Tested the new delete functionality in the edit form. The delete button ('予約削除') is correctly located inside the edit form. When clicking on a reservation bar, the edit form opens with the reservation data populated. Clicking the delete button shows a confirmation dialog with the expected message. After accepting the confirmation, the reservation is successfully deleted, the form closes automatically, and the timetable updates to reflect the deletion."
+  - task: "Reservation rules display"
+    implemented: true
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added reservation rules section with 5 rules including day restrictions, proper usage guidelines, early termination procedures, cancellation requirements, and extension communication protocols. Rules are prominently displayed between date navigation and timetable."
 
 metadata:
   created_by: "main_agent"
