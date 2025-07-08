@@ -3,6 +3,10 @@
   "builds": [
     {
       "src": "frontend/package.json",
+      "config": { "distDir": "build" }
+      "config": { "distDir": "build" },
+      "env": { "REACT_APP_BACKEND_URL": "" }
+
       "use": "@vercel/static-build",
       "config": {
         "distDir": "build"
