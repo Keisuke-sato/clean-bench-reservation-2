@@ -92,7 +92,15 @@ class ReservationCreate(BaseModel):
     def validate_user_name(cls, v):
         if not v or not v.strip():
             raise ValueError('user_name is required')
-        return v.strip()
+        # 長さ制限（1-50文字）
+        v = v.strip()
+        if len(v) < 1 or len(v) > 50:
+            raise ValueError('利用者名は1文字以上50文字以下で入力してください')
+        # 危険な文字の除外
+        import re
+        if re.search(r'[<>"\'\&]', v):
+            raise ValueError('利用者名に使用できない文字が含まれています')
+        return v
     
     @validator('start_time', 'end_time')
     def validate_time_format(cls, v):
