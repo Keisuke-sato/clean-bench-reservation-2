@@ -416,13 +416,13 @@ def test_edge_cases():
     
     # Test minute-level precision
     try:
-        # Generate a reservation with specific minute values
+        # Generate a reservation with specific minute values that comply with 30-min increments
         now = datetime.datetime.now(JST)
         # Use a time far in the future to avoid conflicts
         start = now + datetime.timedelta(hours=8)
-        # Set specific minutes
-        start = start.replace(minute=37, second=0, microsecond=0)
-        end = start + datetime.timedelta(minutes=42)  # 42 minutes duration
+        # Set to valid 30-minute increment
+        start = start.replace(hour=max(7, min(21, start.hour)), minute=30, second=0, microsecond=0)
+        end = start + datetime.timedelta(minutes=60)  # 60 minutes duration (valid 30-min increment)
         
         minute_precision = {
             "bench_id": "front",
@@ -455,6 +455,9 @@ def test_edge_cases():
             minute_precision_message = f"Failed to create test reservation - Status: {response.status_code}, Response: {response.text}"
         
         print_test_result("Minute-level Precision", minute_precision_success, minute_precision_message)
+    except Exception as e:
+        print_test_result("Minute-level Precision", False, f"Exception: {str(e)}")
+        minute_precision_success = False
     except Exception as e:
         print_test_result("Minute-level Precision", False, f"Exception: {str(e)}")
         minute_precision_success = False
