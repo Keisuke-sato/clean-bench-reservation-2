@@ -9,7 +9,7 @@ import uuid
 import sys
 
 # Backend URL from frontend/.env
-BASE_URL = "https://54055db6-fd37-4a50-8dcd-ce9bf336fd59.preview.emergentagent.com/api"
+BASE_URL = "https://ff3052c6-dcc0-4552-bce3-6326f179963f.preview.emergentagent.com/api"
 
 # Japan Standard Time timezone
 JST = pytz.timezone('Asia/Tokyo')
