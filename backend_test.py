@@ -18,7 +18,7 @@ BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL')
 if not BACKEND_URL:
     BACKEND_URL = "http://localhost:8001"
     
-BASE_URL = f"{BACKEND_URL}"  # No need to add /api since the API is already at the root
+BASE_URL = f"{BACKEND_URL}/api"  # The API is at /api
 
 print(f"Using backend URL: {BASE_URL}")
 
