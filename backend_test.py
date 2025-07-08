@@ -457,6 +457,155 @@ def test_edge_cases():
         minute_precision_success
     )
 
+# 11. Test Time Range Validation (7:00-22:00)
+def test_time_range_validation():
+    # Test reservation before 7:00
+    before_hours = generate_test_reservation()
+    start_dt = parser.parse(before_hours["start_time"])
+    # Set to 6:30 AM
+    before_start = start_dt.replace(hour=6, minute=30)
+    before_end = before_start + datetime.timedelta(hours=1)
+    before_hours["start_time"] = before_start.isoformat()
+    before_hours["end_time"] = before_end.isoformat()
+    
+    try:
+        response = requests.post(f"{BASE_URL}/reservations", json=before_hours)
+        before_hours_success = response.status_code == 400  # Should be rejected
+        before_hours_message = f"Before 7:00 - Status: {response.status_code}, Response: {response.text}"
+        print_test_result("Reservation Before 7:00", before_hours_success, before_hours_message)
+    except Exception as e:
+        print_test_result("Reservation Before 7:00", False, f"Exception: {str(e)}")
+        before_hours_success = False
+    
+    # Test reservation after 22:00
+    after_hours = generate_test_reservation()
+    start_dt = parser.parse(after_hours["start_time"])
+    # Set to 22:30 PM
+    after_start = start_dt.replace(hour=22, minute=30)
+    after_end = after_start + datetime.timedelta(hours=1)
+    after_hours["start_time"] = after_start.isoformat()
+    after_hours["end_time"] = after_end.isoformat()
+    
+    try:
+        response = requests.post(f"{BASE_URL}/reservations", json=after_hours)
+        after_hours_success = response.status_code == 400  # Should be rejected
+        after_hours_message = f"After 22:00 - Status: {response.status_code}, Response: {response.text}"
+        print_test_result("Reservation After 22:00", after_hours_success, after_hours_message)
+    except Exception as e:
+        print_test_result("Reservation After 22:00", False, f"Exception: {str(e)}")
+        after_hours_success = False
+    
+    # Test valid time range (7:00-22:00)
+    valid_hours = generate_test_reservation()
+    start_dt = parser.parse(valid_hours["start_time"])
+    # Set to 9:00 AM
+    valid_start = start_dt.replace(hour=9, minute=0)
+    valid_end = valid_start + datetime.timedelta(hours=1)
+    valid_hours["start_time"] = valid_start.isoformat()
+    valid_hours["end_time"] = valid_end.isoformat()
+    
+    try:
+        response = requests.post(f"{BASE_URL}/reservations", json=valid_hours)
+        valid_hours_success = response.status_code == 200  # Should be accepted
+        valid_hours_message = f"Valid hours - Status: {response.status_code}, Response: {response.text}"
+        print_test_result("Valid Time Range (7:00-22:00)", valid_hours_success, valid_hours_message)
+        
+        # Clean up this test reservation
+        if valid_hours_success and response.status_code == 200:
+            data = response.json()
+            if "id" in data:
+                requests.delete(f"{BASE_URL}/reservations/{data['id']}")
+    except Exception as e:
+        print_test_result("Valid Time Range (7:00-22:00)", False, f"Exception: {str(e)}")
+        valid_hours_success = False
+    
+    return before_hours_success and after_hours_success and valid_hours_success
+
+# 12. Test 30-Minute Increments Validation
+def test_30min_increments_validation():
+    # Test non-30-minute increment start time
+    invalid_start = generate_test_reservation()
+    start_dt = parser.parse(invalid_start["start_time"])
+    # Set to 10:15 (not on 30-min increment)
+    invalid_start_time = start_dt.replace(hour=10, minute=15)
+    invalid_end_time = invalid_start_time + datetime.timedelta(hours=1)
+    invalid_start["start_time"] = invalid_start_time.isoformat()
+    invalid_start["end_time"] = invalid_end_time.isoformat()
+    
+    try:
+        response = requests.post(f"{BASE_URL}/reservations", json=invalid_start)
+        invalid_start_success = response.status_code == 400  # Should be rejected
+        invalid_start_message = f"Invalid start time increment - Status: {response.status_code}, Response: {response.text}"
+        print_test_result("Non-30-Minute Start Time", invalid_start_success, invalid_start_message)
+    except Exception as e:
+        print_test_result("Non-30-Minute Start Time", False, f"Exception: {str(e)}")
+        invalid_start_success = False
+    
+    # Test non-30-minute increment end time
+    invalid_end = generate_test_reservation()
+    start_dt = parser.parse(invalid_end["start_time"])
+    # Set to valid start but invalid end
+    valid_start_time = start_dt.replace(hour=10, minute=0)
+    invalid_end_time = valid_start_time + datetime.timedelta(minutes=45)  # 10:45, not on 30-min increment
+    invalid_end["start_time"] = valid_start_time.isoformat()
+    invalid_end["end_time"] = invalid_end_time.isoformat()
+    
+    try:
+        response = requests.post(f"{BASE_URL}/reservations", json=invalid_end)
+        invalid_end_success = response.status_code == 400  # Should be rejected
+        invalid_end_message = f"Invalid end time increment - Status: {response.status_code}, Response: {response.text}"
+        print_test_result("Non-30-Minute End Time", invalid_end_success, invalid_end_message)
+    except Exception as e:
+        print_test_result("Non-30-Minute End Time", False, f"Exception: {str(e)}")
+        invalid_end_success = False
+    
+    # Test valid 30-minute increments
+    valid_increments = generate_test_reservation()
+    start_dt = parser.parse(valid_increments["start_time"])
+    # Set to 10:30 (valid 30-min increment)
+    valid_start_time = start_dt.replace(hour=10, minute=30)
+    valid_end_time = valid_start_time + datetime.timedelta(minutes=60)  # 11:30, valid 30-min increment
+    valid_increments["start_time"] = valid_start_time.isoformat()
+    valid_increments["end_time"] = valid_end_time.isoformat()
+    
+    try:
+        response = requests.post(f"{BASE_URL}/reservations", json=valid_increments)
+        valid_increments_success = response.status_code == 200  # Should be accepted
+        valid_increments_message = f"Valid 30-min increments - Status: {response.status_code}, Response: {response.text}"
+        print_test_result("Valid 30-Minute Increments", valid_increments_success, valid_increments_message)
+        
+        # Clean up this test reservation
+        if valid_increments_success and response.status_code == 200:
+            data = response.json()
+            if "id" in data:
+                requests.delete(f"{BASE_URL}/reservations/{data['id']}")
+    except Exception as e:
+        print_test_result("Valid 30-Minute Increments", False, f"Exception: {str(e)}")
+        valid_increments_success = False
+    
+    return invalid_start_success and invalid_end_success and valid_increments_success
+
+# 13. Test Database Connectivity
+def test_database_connectivity():
+    try:
+        response = requests.get(f"{BASE_URL}/health")
+        data = response.json()
+        
+        is_success = (
+            response.status_code == 200 and
+            "status" in data and
+            data["status"] == "healthy" and
+            "database" in data and
+            data["database"] == "connected"
+        )
+        
+        message = f"Status: {response.status_code}, Response: {json.dumps(data)}"
+        print_test_result("Database Connectivity", is_success, message)
+        return is_success
+    except Exception as e:
+        print_test_result("Database Connectivity", False, f"Exception: {str(e)}")
+        return False
+
 def run_all_tests():
     print("🧪 Starting Backend API Tests 🧪")
     print("=" * 50)
