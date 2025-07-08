@@ -178,7 +178,7 @@ backend:
   - task: "Vercel deployment configuration"
     implemented: true
     working: true
-    file: "server.py"
+    file: "api/index.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
@@ -192,6 +192,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "Vercel deployment configuration is now working correctly. All API endpoints are accessible through the configured URL. The Mangum handler is properly handling serverless function requests."
+      - working: true
+        agent: "testing"
+        comment: "Successfully tested the backend API endpoints after moving from /backend/server.py to /api/index.py for Vercel deployment. All 24 tests are now passing. The API correctly handles CRUD operations, double-booking prevention, JST timezone handling, bench information retrieval, health check, database connectivity, and validation for time range and increments."
 
 frontend:
   - task: "Japanese language interface"
