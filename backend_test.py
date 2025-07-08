@@ -7,9 +7,15 @@ from dateutil import parser
 import time
 import uuid
 import sys
+import os
+from dotenv import load_dotenv
 
-# Backend URL from frontend/.env
-BASE_URL = "https://ff3052c6-dcc0-4552-bce3-6326f179963f.preview.emergentagent.com/api"
+# Load the REACT_APP_BACKEND_URL from frontend/.env
+load_dotenv('/app/frontend/.env')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL')
+BASE_URL = f"{BACKEND_URL}/api"
+
+print(f"Using backend URL: {BASE_URL}")
 
 # Japan Standard Time timezone
 JST = pytz.timezone('Asia/Tokyo')
