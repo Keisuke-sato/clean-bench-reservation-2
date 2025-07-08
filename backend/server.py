@@ -8,8 +8,14 @@ from pathlib import Path
 from pydantic import BaseModel, Field, validator
 from typing import List, Optional
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 import pytz
+
+connection_status = {
+    "healthy": True,
+    "last_check": datetime.now(pytz.timezone("Asia/Tokyo")).isoformat(),
+}
+
 from dateutil import parser
 import asyncio
 
