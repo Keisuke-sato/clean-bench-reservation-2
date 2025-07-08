@@ -285,8 +285,7 @@ test_plan:
     - "CRUD API endpoints for reservations"
     - "Double-booking prevention algorithm"
     - "JST timezone handling and datetime utilities"
-  stuck_tasks:
-    - "Vercel deployment configuration"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
