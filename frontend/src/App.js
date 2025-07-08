@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+// Use relative URL if REACT_APP_BACKEND_URL is not set (for production)
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 // Create axios instance with common configuration
 const api = axios.create({
-  baseURL: `${BACKEND_URL}/api`,
+  baseURL: BACKEND_URL ? `${BACKEND_URL}/api` : '/api',
   timeout: 10000,
   headers: {
     'Accept': 'application/json',
