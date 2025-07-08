@@ -4,20 +4,14 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import asyncio
 from pathlib import Path
 from pydantic import BaseModel, Field, validator
 from typing import List, Optional
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import pytz
-
-connection_status = {
-    "healthy": True,
-    "last_check": datetime.now(pytz.timezone("Asia/Tokyo")).isoformat(),
-}
-
 from dateutil import parser
-import asyncio
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
