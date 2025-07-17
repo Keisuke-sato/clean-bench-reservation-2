@@ -559,4 +559,4 @@ async def shutdown_db_client():
 from mangum import Mangum
 
 # Create the handler for Vercel
-app = Mangum(app)
+handler = Mangum(app)
