@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException
-from fastapi.middleware.cors import CORSMiddleware  # CORSミドルウェアのインポート
+from fastapi.middleware.cors import CORSMiddleware # CORSミドルウェアをインポート
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
@@ -27,17 +27,17 @@ load_dotenv(ROOT_DIR / '.env')
 # --- FastAPIアプリケーションのインスタンスを作成 ---
 app = FastAPI()
 
-# --- CORSミドルウェアの設定 ---
-# これがCORSエラーを解決する最重要部分です。
-# アプリケーションの初期段階で設定することで、全てのルートに適用されます。
+# --- CORSミドルウェアの設定 (最重要) ---
+# アプリケーションの初期段階で、全てのルートが定義される前に設定します。
+# これにより、どのURLからのリクエストにもCORS許可証が発行されます。
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # すべてのオリジンからのアクセスを許可
+    allow_origins=["*"],  # すべてのオリジンを許可
     allow_credentials=True,
-    allow_methods=["*"],  # すべてのHTTPメソッドを許可
-    allow_headers=["*"],  # すべてのHTTPヘッダーを許可
+    allow_methods=["*"],  # すべてのメソッドを許可
+    allow_headers=["*"],  # すべてのヘッダーを許可
 )
-# --------------------------------
+# ------------------------------------
 
 # MongoDBへの接続設定
 mongo_url = os.environ['MONGO_URL']
