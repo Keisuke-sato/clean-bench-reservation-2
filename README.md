@@ -43,7 +43,7 @@ DB_NAME="bench_reservation"
 
 #### frontend/.env
 ```bash
-REACT_APP_BACKEND_URL="http://localhost:8001"
+REACT_APP_BACKEND_URL="[http://localhost:8001](https://clean-bench-reservation-2.vercel.app)"
 ```
 
 ### 開発サーバー起動
