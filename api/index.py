@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException
-from fastapi.middleware.cors import CORSMiddleware # CORSミドルウェアをインポート
+from fastapi.middleware.cors import CORSMiddleware  # CORSミドルウェアのインポート
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
@@ -29,7 +29,6 @@ app = FastAPI()
 
 # --- CORSミドルウェアの設定 (最重要) ---
 # アプリケーションの初期段階で、全てのルートが定義される前に設定します。
-# これにより、どのURLからのリクエストにもCORS許可証が発行されます。
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # すべてのオリジンを許可
@@ -60,9 +59,10 @@ connection_status = {
     "healthy": True,
     "last_check": datetime.now(pytz.timezone('Asia/Tokyo')).isoformat()
 }
+JST = pytz.timezone('Asia/Tokyo') # JSTをグローバルに定義
 
 async def check_database_connection():
-    """データベース接続を確認し、必要に応じて再接続"""
+    """データベース接続を確認"""
     global connection_status
     try:
         start_time = datetime.now()
@@ -90,10 +90,7 @@ async def ensure_database_connection():
 # APIルーターの作成
 api_router = APIRouter()
 
-# 日本標準時のタイムゾーン
-JST = pytz.timezone('Asia/Tokyo')
-
-# Pydanticモデルの定義
+# Pydanticモデルの定義 (変更なし、内容は省略)
 class ReservationCreate(BaseModel):
     bench_id: str
     user_name: str
@@ -153,7 +150,8 @@ class ReservationUpdate(BaseModel):
                 raise ValueError(f'Invalid time format: {str(e)}')
         return v
 
-# ユーティリティ関数
+
+# ユーティリティ関数 (変更なし、内容は省略)
 def parse_jst_time(time_str: str) -> datetime:
     dt = parser.parse(time_str)
     if dt.tzinfo is None:
@@ -180,7 +178,7 @@ async def check_double_booking(bench_id: str, start_time: str, end_time: str, ex
     
     return False
 
-# --- APIルートの定義 ---
+# --- APIルートの定義 (変更なし、内容は省略) ---
 @api_router.get("/")
 async def root():
     return {"message": "ベンチ予約システム API", "current_time_jst": datetime.now(JST).isoformat()}
